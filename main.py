@@ -77,18 +77,27 @@ def build_vector_store():
 def build_tools(vector_store):
     """Define a tool de recuperação de contexto a partir do vector store."""
 
+    from langchain.tools import tool
+
     @tool(response_format="content_and_artifact")
     def retrieve_context(query: str):
         """
         Recupera informações sobre História das Olimpíadas a partir do PDF
         para ajudar a responder uma pergunta.
         """
-        # k define quantos trechos mais similares serão retornados
-        retrieved_docs = vector_store.similarity_search(query, k=3)
+        # Força a query a ficar no contexto do tema
+        query_for_search = f"No contexto da história das Olimpíadas: {query}"
+
+        retrieved_docs = vector_store.similarity_search(query_for_search, k=5)
         serialized = "\n\n".join(
             (f"Source: {doc.metadata}\nContent: {doc.page_content}")
             for doc in retrieved_docs
         )
+
+        # DEBUG opcional: ver o que está vindo do PDF
+        # print("=== CONTEXTO RECUPERADO ===")
+        # print(serialized[:1000])
+
         return serialized, retrieved_docs
 
     return [retrieve_context]
