@@ -1,0 +1,9 @@
+langchain
+langchain-mistralai
+langchain-text-splitters
+langchain-community
+langchain-core
+sentencepiece
+python-dotenv
+pydantic
+pypdf
