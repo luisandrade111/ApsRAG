@@ -1,25 +1,11 @@
 import os
 from dotenv import load_dotenv
-
-# Modelo de chat genérico do LangChain (Mistral via init_chat_model)
 from langchain.chat_models import init_chat_model
-
-# Embeddings do Mistral
 from langchain_mistralai import MistralAIEmbeddings
-
-# Vector store em memória
 from langchain_core.vectorstores import InMemoryVectorStore
-
-# Carregador de PDF
 from langchain_community.document_loaders import PyPDFLoader
-
-# Split de texto em chunks
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-# Ferramentas (tools) para o agente
 from langchain.tools import tool
-
-# Criação do agente
 from langchain.agents import create_agent
 
 
@@ -34,8 +20,7 @@ def load_env_and_model():
     if not api_key:
         raise ValueError("MISTRAL_API_KEY não fornecida no arquivo .env")
 
-    # Esse init_chat_model usa o provedor Mistral configurado
-    # Modelo sugerido pelo professor: "mistral-small-latest"
+   
     model = init_chat_model("mistral-tiny")
     return model
 
@@ -85,7 +70,7 @@ def build_tools(vector_store):
         Recupera informações sobre História das Olimpíadas a partir do PDF
         para ajudar a responder uma pergunta.
         """
-        # Força a query a ficar no contexto do tema
+     
         query_for_search = f"No contexto da história das Olimpíadas: {query}"
 
         retrieved_docs = vector_store.similarity_search(query_for_search, k=5)
@@ -94,9 +79,7 @@ def build_tools(vector_store):
             for doc in retrieved_docs
         )
 
-        # DEBUG opcional: ver o que está vindo do PDF
-        # print("=== CONTEXTO RECUPERADO ===")
-        # print(serialized[:1000])
+        
 
         return serialized, retrieved_docs
 
@@ -132,20 +115,18 @@ def run_interactive_loop(agent):
             print("Agente: Até mais! 👋")
             break
 
-        # Enviamos a mensagem no formato esperado pelo agente
+ 
         try:
-            # Aqui vou usar o stream para ficar próximo do exemplo do professor.
-            # Se der problema, pode trocar por uma chamada simples sem stream.
             print("Agente (pensando...)\n")
             response_text = ""
 
-            # Streaming da resposta
+        
             for event in agent.stream(
                 {"messages": [{"role": "user", "content": user_input}]},
                 stream_mode="values",
             ):
                 last_msg = event["messages"][-1]
-                # O pretty_print é útil em notebook; aqui vamos só pegar o conteúdo
+               
                 if getattr(last_msg, "content", None):
                     response_text = last_msg.content
 
@@ -156,19 +137,17 @@ def run_interactive_loop(agent):
 
 
 def main():
-    # 1) Modelo
+   
     model = load_env_and_model()
 
-    # 2) Vector store com o PDF
     vector_store = build_vector_store()
 
-    # 3) Tools (retrieve_context)
     tools = build_tools(vector_store)
 
-    # 4) Agente RAG
+ 
     agent = build_agent(model, tools)
 
-    # 5) Loop interativo
+    
     run_interactive_loop(agent)
 
 
